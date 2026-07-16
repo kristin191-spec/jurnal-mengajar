@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Presensi Kelas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --board:#1E3A2B;
+    --board-dark:#16291F;
+    --chalk:#F4F1E8;
+    --chalk-dim:#C9D4C9;
+    --paper:#FFFDF7;
+    --paper-line:#E4DFC9;
+    --yellow:#E8B33D;
+    --red:#D2574B;
+    --red-dark:#8C3129;
+    --ink:#233229;
+    --ink-soft:#5B6A5E;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:var(--board);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(255,255,255,0.015) 0px, rgba(255,255,255,0.015) 1px, transparent 1px, transparent 3px);
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+    padding:28px 16px 60px;
+  }
+  .frame{
+    max-width:640px;
+    margin:0 auto;
+  }
+  .board-head{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .board-head h1{
+    font-family:'Architects Daughter', cursive;
+    color:var(--chalk);
+    font-size:34px;
+    font-weight:400;
+    margin:0 0 4px;
+    letter-spacing:0.5px;
+  }
+  .board-head p{
+    color:var(--chalk-dim);
+    font-size:13px;
+    margin:0;
+    font-family:'IBM Plex Mono', monospace;
+  }
+  .card{
+    position:relative;
+    background:var(--paper);
+    border-radius:6px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+    padding:26px 22px 22px;
+  }
+  .pin{
+    position:absolute;
+    top:-9px;
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    background:var(--red);
+    box-shadow:0 3px 5px rgba(0,0,0,0.35), inset 0 -3px 3px rgba(0,0,0,0.2);
+  }
+  .pin.left{left:26px;}
+  .pin.right{right:26px;}
+
+  .guru-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px dashed var(--paper-line);
+    padding-bottom:12px;
+    margin-bottom:16px;
+  }
+  .guru-bar .who{
+    font-size:13px;
+    color:var(--ink-soft);
+  }
+  .guru-bar .who b{color:var(--ink);}
+  .link-btn{
+    background:none;
+    border:none;
+    color:var(--red-dark);
+    font-size:12px;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:0;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+
+  .tabs{
+    display:flex;
+    gap:6px;
+    margin-bottom:18px;
+  }
+  .tab-btn{
+    flex:1;
+    padding:9px 8px;
+    border:1px solid var(--paper-line);
+    background:transparent;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink-soft);
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .tab-btn.active{
+    background:var(--board);
+    color:var(--chalk);
+    border-color:var(--board);
+  }
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:12px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .wajib-mark{
+    color:var(--red);
+    font-weight:600;
+    text-transform:none;
+    letter-spacing:0;
+  }
+  .tanggal-box{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:14px;
+    background:#FBF9F1;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    padding:10px 12px;
+    color:var(--ink);
+  }
+  input[type=text], textarea{
+    width:100%;
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:#FBF9F1;
+    color:var(--ink);
+    resize:vertical;
+  }
+  textarea{min-height:70px;}
+  input[type=text]:focus, textarea:focus, .guru-input:focus{
+    outline:none;
+    border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(210,87,75,0.12);
+  }
+
+  .siswa-add{
+    display:flex;
+    gap:8px;
+  }
+  .siswa-add input{flex:1;}
+  .siswa-add select{
+    font-family:'IBM Plex Sans', sans-serif;
+    font-size:13px;
+    padding:0 8px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:#FBF9F1;
+    color:var(--ink);
+  }
+  .siswa-add button{
+    padding:0 16px;
+    background:var(--board);
+    color:var(--chalk);
+    border:none;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .siswa-add button:active{transform:scale(0.97);}
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:10px;
+  }
+  .chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:#FBEAE7;
+    border:1px solid #EFC4BC;
+    color:var(--red-dark);
+    font-size:12.5px;
+    padding:5px 8px 5px 10px;
+    border-radius:14px;
+  }
+  .chip .ket-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    padding:2px 6px;
+    border-radius:8px;
+    text-transform:uppercase;
+    letter-spacing:0.02em;
+  }
+  .ket-sakit{background:#FAEEDA;color:#854F0B;}
+  .ket-izin{background:#E6F1FB;color:#0C447C;}
+  .ket-alfa{background:#FCEBEB;color:#791F1F;}
+  .chip button{
+    border:none;
+    background:none;
+    color:var(--red-dark);
+    cursor:pointer;
+    font-size:14px;
+    line-height:1;
+    padding:0;
+  }
+  .jumlah-tag{
+    display:inline-block;
+    margin-top:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+  }
+  .jumlah-tag b{color:var(--ink);}
+
+  .foto-zone{
+    border:1.5px dashed var(--paper-line);
+    border-radius:8px;
+    padding:16px;
+    text-align:center;
+  }
+  .foto-zone img{
+    max-width:100%;
+    max-height:220px;
+    border-radius:6px;
+    display:block;
+    margin:0 auto 10px;
+  }
+  .foto-btn{
+    background:var(--yellow);
+    color:#3E2A05;
+    border:none;
+    padding:9px 18px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .foto-hint{
+    font-size:11.5px;
+    color:var(--ink-soft);
+    margin-top:8px;
+  }
+
+  .submit-btn{
+    width:100%;
+    background:var(--red);
+    color:#fff;
+    border:none;
+    padding:13px;
+    border-radius:8px;
+    font-size:14.5px;
+    font-weight:600;
+    cursor:pointer;
+    margin-top:6px;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .submit-btn:active{transform:scale(0.99);}
+  .submit-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:24px;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--board-dark);
+    color:var(--chalk);
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:13px;
+    opacity:0;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+    pointer-events:none;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .riwayat-item{
+    border:1px solid var(--paper-line);
+    border-radius:8px;
+    padding:14px;
+    margin-bottom:10px;
+    background:#FBF9F1;
+  }
+  .riwayat-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:10px;
+    cursor:pointer;
+  }
+  .riwayat-top .mapel{font-size:14.5px;font-weight:600;color:var(--ink);}
+  .riwayat-top .tgl{font-size:11.5px;font-family:'IBM Plex Mono', monospace;color:var(--ink-soft);margin-top:2px;}
+  .riwayat-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    background:#FBEAE7;
+    color:var(--red-dark);
+    padding:3px 8px;
+    border-radius:10px;
+    white-space:nowrap;
+  }
+  .riwayat-detail{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px dashed var(--paper-line);
+    font-size:13px;
+    display:none;
+  }
+  .riwayat-detail.open{display:block;}
+  .riwayat-detail p{margin:4px 0;color:var(--ink-soft);}
+  .riwayat-detail p b{color:var(--ink);}
+  .riwayat-detail img{
+    max-width:100%;
+    border-radius:6px;
+    margin-top:8px;
+    display:block;
+  }
+  .del-btn{
+    margin-top:10px;
+    background:none;
+    border:1px solid #EFC4BC;
+    color:var(--red-dark);
+    font-size:12px;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .empty{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:13px;
+    padding:30px 10px;
+  }
+  .filter-bar{
+    display:flex;
+    gap:10px;
+    margin-bottom:10px;
+  }
+  .scope-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:12.5px;
+    color:var(--ink-soft);
+    margin-bottom:12px;
+    cursor:pointer;
+  }
+  .scope-toggle input{
+    width:15px;
+    height:15px;
+    accent-color:var(--red);
+    cursor:pointer;
+  }
+  .guru-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10.5px;
+    background:#E6F1FB;
+    color:#0C447C;
+    padding:2px 7px;
+    border-radius:8px;
+    margin-top:4px;
+  }
+  .filter-field{flex:1;}
+  .filter-field label{
+    display:block;
+    font-size:11px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:0.03em;
+    color:var(--ink-soft);
+    margin-bottom:5px;
+  }
+  .filter-field input[type=date]{
+    width:100%;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    padding:8px 10px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:#FBF9F1;
+    color:var(--ink);
+  }
+  .filter-actions{
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+  }
+  .reset-btn{
+    background:none;
+    border:1px solid var(--paper-line);
+    color:var(--ink-soft);
+    font-size:12.5px;
+    padding:9px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .download-btn{
+    flex:1;
+    background:var(--board);
+    color:var(--chalk);
+    border:none;
+    font-size:12.5px;
+    font-weight:600;
+    padding:9px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .download-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  .login-wrap{
+    max-width:340px;
+    margin:60px auto 0;
+    text-align:center;
+  }
+  .login-wrap h1{
+    font-family:'Architects Daughter', cursive;
+    color:var(--chalk);
+    font-size:30px;
+    font-weight:400;
+    margin:0 0 6px;
+  }
+  .login-wrap p{
+    color:var(--chalk-dim);
+    font-size:13px;
+    margin:0 0 24px;
+  }
+  .login-card{
+    background:var(--paper);
+    border-radius:8px;
+    padding:24px 22px;
+    box-shadow:0 14px 30px rgba(0,0,0,0.35);
+  }
+  .login-card label{
+    display:block;
+    text-align:left;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    margin-bottom:6px;
+  }
+  .guru-input{
+    width:100%;
+    font-size:15px;
+    padding:11px 12px;
+    border:1px solid var(--paper-line);
+    border-radius:6px;
+    background:#FBF9F1;
+    font-family:'IBM Plex Sans', sans-serif;
+    color:var(--ink);
+  }
+  .login-btn{
+    width:100%;
+    margin-top:14px;
+    background:var(--board);
+    color:var(--chalk);
+    border:none;
+    padding:12px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:'IBM Plex Sans', sans-serif;
+  }
+  .hidden{display:none !important;}
+  #fotoInput{display:none;}
+  .loading-txt{
+    text-align:center;
+    color:var(--chalk-dim);
+    font-size:13px;
+    margin-top:16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="frame">
+  <div class="board-head">
+    <h1>Buku presensi kelas</h1>
+    <p id="subTitle">catatan kehadiran harian</p>
+  </div>
+
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <label for="guruNameInput">Nama guru</label>
+      <input type="text" id="guruNameInput" class="guru-input" placeholder="cth. Siti Rahayu">
+      <button class="login-btn" id="loginBtn">Masuk</button>
+    </div>
+  </div>
+
+  <div id="appView" class="hidden">
+    <div class="card">
+      <div class="pin left"></div>
+      <div class="pin right"></div>
+
+      <div class="guru-bar">
+        <div class="who">Guru: <b id="guruLabel"></b></div>
+        <button class="link-btn" id="gantiGuruBtn">ganti guru</button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" id="tabPresensi">Presensi baru</button>
+        <button class="tab-btn" id="tabRiwayat">Riwayat</button>
+      </div>
+
+      <div id="viewPresensi">
+        <div class="field">
+          <label>Tanggal</label>
+          <div class="tanggal-box" id="tanggalBox"></div>
+        </div>
+
+        <div class="field">
+          <label>Mata pelajaran</label>
+          <input type="text" id="mapelInput" placeholder="cth. Matematika">
+        </div>
+
+        <div class="field">
+          <label>Materi yang disampaikan</label>
+          <textarea id="materiInput" placeholder="cth. Persamaan linear satu variabel"></textarea>
+        </div>
+
+        <div class="field">
+          <label>Siswa tidak hadir</label>
+          <div class="siswa-add">
+            <input type="text" id="siswaInput" placeholder="Ketik nama siswa lalu tambah">
+            <select id="keteranganInput">
+              <option value="Sakit">Sakit</option>
+              <option value="Izin">Izin</option>
+              <option value="Alfa">Alfa</option>
+            </select>
+            <button id="tambahSiswaBtn" type="button">Tambah</button>
+          </div>
+          <div class="chip-row" id="chipRow"></div>
+          <div class="jumlah-tag">Jumlah tidak hadir: <b id="jumlahLabel">0</b> siswa</div>
+        </div>
+
+        <div class="field">
+          <label>Foto selfie di kelas <span class="wajib-mark">*wajib</span></label>
+          <div class="foto-zone" id="fotoZone">
+            <img id="fotoPreview" class="hidden">
+            <button type="button" class="foto-btn" id="fotoBtn">Ambil foto</button>
+            <div class="foto-hint" id="fotoHint">Belum ada foto</div>
+          </div>
+          <input type="file" id="fotoInput" accept="image/*" capture="user">
+        </div>
+
+        <button class="submit-btn" id="simpanBtn">Simpan presensi</button>
+      </div>
+
+      <div id="viewRiwayat" class="hidden">
+        <label class="scope-toggle">
+          <input type="checkbox" id="semuaGuruToggle">
+          <span>Rekap semua guru (bukan hanya saya)</span>
+        </label>
+        <div class="filter-bar">
+          <div class="filter-field">
+            <label>Dari tanggal</label>
+            <input type="date" id="dariTglInput">
+          </div>
+          <div class="filter-field">
+            <label>Sampai tanggal</label>
+            <input type="date" id="sampaiTglInput">
+          </div>
+        </div>
+        <div class="filter-actions">
+          <button type="button" class="reset-btn" id="resetFilterBtn">Reset</button>
+          <button type="button" class="download-btn" id="downloadCsvBtn">Unduh CSV</button>
+        </div>
+        <div id="riwayatList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// GANTI URL di bawah ini dengan alamat folder "api" di hosting
+// PHP Anda, contoh: "https://namadomain.com/presensi/api"
+// (tanpa tanda / di akhir)
+// ============================================================
+const API_BASE_URL = "https://jurnal-sekolah.wuaze.com/api";
+
+let guruName = "";
+let guruSlug = "";
+let siswaTidakHadir = [];
+let fotoDataUrl = "";
+
+const hariList = ["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const bulanList = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+
+function slugify(s){
+  return s.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'guru';
+}
+
+function formatTanggal(d){
+  return hariList[d.getDay()] + ", " + d.getDate() + " " + bulanList[d.getMonth()] + " " + d.getFullYear();
+}
+
+function dateKey(d){
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
+
+function recordDateKey(rec){
+  if(rec.tanggalKey) return rec.tanggalKey;
+  return dateKey(new Date(rec.tanggalIso));
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+function setTanggalBox(){
+  const now = new Date();
+  document.getElementById('tanggalBox').textContent = formatTanggal(now);
+}
+
+function renderChips(){
+  const row = document.getElementById('chipRow');
+  row.innerHTML = '';
+  siswaTidakHadir.forEach((item, idx) => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.innerHTML = '<span class="nm"></span><span class="ket-badge"></span><button type="button" aria-label="hapus">\u00d7</button>';
+    chip.querySelector('.nm').textContent = item.nama;
+    const badge = chip.querySelector('.ket-badge');
+    badge.textContent = item.keterangan;
+    badge.classList.add('ket-' + item.keterangan.toLowerCase());
+    chip.querySelector('button').addEventListener('click', () => {
+      siswaTidakHadir.splice(idx,1);
+      renderChips();
+    });
+    row.appendChild(chip);
+  });
+  document.getElementById('jumlahLabel').textContent = siswaTidakHadir.length;
+}
+
+document.getElementById('tambahSiswaBtn').addEventListener('click', () => {
+  const inp = document.getElementById('siswaInput');
+  const val = inp.value.trim();
+  const ket = document.getElementById('keteranganInput').value;
+  if(val){
+    siswaTidakHadir.push({nama: val, keterangan: ket});
+    inp.value = '';
+    renderChips();
+    inp.focus();
+  }
+});
+document.getElementById('siswaInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    document.getElementById('tambahSiswaBtn').click();
+  }
+});
+
+document.getElementById('fotoBtn').addEventListener('click', () => {
+  document.getElementById('fotoInput').click();
+});
+
+document.getElementById('fotoInput').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 480;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      fotoDataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      const preview = document.getElementById('fotoPreview');
+      preview.src = fotoDataUrl;
+      preview.classList.remove('hidden');
+      document.getElementById('fotoHint').textContent = 'Foto siap disimpan. Ketuk tombol untuk mengganti.';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function resetForm(){
+  document.getElementById('mapelInput').value = '';
+  document.getElementById('materiInput').value = '';
+  siswaTidakHadir = [];
+  renderChips();
+  fotoDataUrl = '';
+  document.getElementById('fotoPreview').classList.add('hidden');
+  document.getElementById('fotoPreview').src = '';
+  document.getElementById('fotoHint').textContent = 'Belum ada foto';
+  setTanggalBox();
+}
+
+document.getElementById('simpanBtn').addEventListener('click', async () => {
+  const mapel = document.getElementById('mapelInput').value.trim();
+  const materi = document.getElementById('materiInput').value.trim();
+  if(!mapel || !materi){
+    showToast('Isi mata pelajaran dan materi dulu');
+    return;
+  }
+  if(!fotoDataUrl){
+    showToast('Ambil foto selfie kelas dulu sebelum menyimpan');
+    return;
+  }
+  const btn = document.getElementById('simpanBtn');
+  btn.disabled = true;
+  btn.textContent = 'Menyimpan...';
+
+  const now = new Date();
+  const record = {
+    guru: guruName,
+    tanggalDisplay: formatTanggal(now),
+    tanggalKey: dateKey(now),
+    mapel: mapel,
+    materi: materi,
+    tidakHadir: siswaTidakHadir.slice(),
+    jumlahTidakHadir: siswaTidakHadir.length,
+    foto: fotoDataUrl
+  };
+
+  try{
+    const res = await fetch(API_BASE_URL + '/simpan.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(record)
+    });
+    const result = await res.json();
+    if(res.ok && result.success){
+      showToast('Presensi tersimpan');
+      resetForm();
+    } else {
+      showToast(result.error || 'Gagal menyimpan, coba lagi');
+    }
+  }catch(err){
+    showToast('Gagal menyimpan, cek koneksi internet / server');
+  }
+  btn.disabled = false;
+  btn.textContent = 'Simpan presensi';
+});
+
+let allRiwayatRecords = [];
+
+async function loadRiwayat(){
+  const list = document.getElementById('riwayatList');
+  list.innerHTML = '<div class="loading-txt" style="color:var(--ink-soft)">Memuat riwayat...</div>';
+  const semuaGuru = document.getElementById('semuaGuruToggle').checked;
+  const params = new URLSearchParams();
+  if(!semuaGuru) params.set('guru_slug', guruSlug);
+  params.set('semua', semuaGuru ? '1' : '0');
+  try{
+    const res = await fetch(API_BASE_URL + '/riwayat.php?' + params.toString());
+    const data = await res.json();
+    if(!res.ok || !Array.isArray(data)){
+      throw new Error('respon tidak valid');
+    }
+    allRiwayatRecords = data.map(d => ({ key: d.id, data: d }));
+    renderRiwayat();
+  }catch(err){
+    list.innerHTML = '<div class="empty">Gagal memuat riwayat. Cek koneksi ke server / alamat API_BASE_URL.</div>';
+  }
+}
+
+function getFilteredRecords(){
+  const dari = document.getElementById('dariTglInput').value;
+  const sampai = document.getElementById('sampaiTglInput').value;
+  return allRiwayatRecords.filter(item => {
+    const key = recordDateKey(item.data);
+    if(dari && key < dari) return false;
+    if(sampai && key > sampai) return false;
+    return true;
+  });
+}
+
+function renderRiwayat(){
+  const list = document.getElementById('riwayatList');
+  const downloadBtn = document.getElementById('downloadCsvBtn');
+  const semuaGuru = document.getElementById('semuaGuruToggle').checked;
+  const filtered = getFilteredRecords();
+  downloadBtn.disabled = filtered.length === 0;
+
+  if(allRiwayatRecords.length === 0){
+    list.innerHTML = semuaGuru
+      ? '<div class="empty">Belum ada riwayat presensi dari guru manapun.</div>'
+      : '<div class="empty">Belum ada riwayat presensi untuk guru ini.</div>';
+    return;
+  }
+  if(filtered.length === 0){
+    list.innerHTML = '<div class="empty">Tidak ada presensi pada rentang tanggal ini.</div>';
+    return;
+  }
+  list.innerHTML = '';
+  filtered.forEach(item => {
+    const d = item.data;
+    const el = document.createElement('div');
+    el.className = 'riwayat-item';
+    const namaList = (d.tidakHadir && d.tidakHadir.length)
+      ? d.tidakHadir.map(x => (typeof x === 'string' ? x : x.nama + ' (' + x.keterangan + ')')).join(', ')
+      : 'Tidak ada (nihil)';
+    el.innerHTML = `
+      <div class="riwayat-top">
+        <div>
+          <div class="mapel"></div>
+          <div class="tgl"></div>
+          <div class="guru-tag hidden"></div>
+        </div>
+        <div class="riwayat-badge"></div>
+      </div>
+      <div class="riwayat-detail">
+        <p><b>Materi:</b> <span class="materiTxt"></span></p>
+        <p><b>Tidak hadir:</b> <span class="namaTxt"></span></p>
+      </div>
+    `;
+    el.querySelector('.mapel').textContent = d.mapel;
+    el.querySelector('.tgl').textContent = d.tanggalDisplay;
+    if(semuaGuru){
+      const tag = el.querySelector('.guru-tag');
+      tag.textContent = d.guru || 'Tidak diketahui';
+      tag.classList.remove('hidden');
+    }
+    el.querySelector('.riwayat-badge').textContent = d.jumlahTidakHadir + ' absen';
+    el.querySelector('.materiTxt').textContent = d.materi;
+    el.querySelector('.namaTxt').textContent = namaList;
+    if(d.foto){
+      const img = document.createElement('img');
+      img.src = d.foto;
+      el.querySelector('.riwayat-detail').appendChild(img);
+    }
+    const delBtn = document.createElement('button');
+    delBtn.className = 'del-btn';
+    delBtn.type = 'button';
+    delBtn.textContent = 'Hapus catatan ini';
+    delBtn.addEventListener('click', async (ev) => {
+      ev.stopPropagation();
+      try{
+        const res = await fetch(API_BASE_URL + '/hapus.php', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({id: item.key})
+        });
+        const result = await res.json();
+        if(res.ok && result.success){
+          showToast('Catatan dihapus');
+          loadRiwayat();
+        } else {
+          showToast('Gagal menghapus');
+        }
+      }catch(e){
+        showToast('Gagal menghapus');
+      }
+    });
+    el.querySelector('.riwayat-detail').appendChild(delBtn);
+    el.querySelector('.riwayat-top').addEventListener('click', () => {
+      el.querySelector('.riwayat-detail').classList.toggle('open');
+    });
+    list.appendChild(el);
+  });
+}
+
+function csvEscape(val){
+  const s = String(val === undefined || val === null ? '' : val);
+  if(/[",\n]/.test(s)){
+    return '"' + s.replace(/"/g, '""') + '"';
+  }
+  return s;
+}
+
+document.getElementById('downloadCsvBtn').addEventListener('click', () => {
+  const filtered = getFilteredRecords();
+  if(filtered.length === 0){
+    showToast('Tidak ada data untuk diunduh');
+    return;
+  }
+  const header = ['Tanggal','Guru','Mata Pelajaran','Materi','Jumlah Tidak Hadir','Siswa Tidak Hadir','Ada Foto'];
+  const rows = [header];
+  filtered.slice().reverse().forEach(item => {
+    const d = item.data;
+    const namaList = (d.tidakHadir && d.tidakHadir.length)
+      ? d.tidakHadir.map(x => (typeof x === 'string' ? x : x.nama + ' (' + x.keterangan + ')')).join('; ')
+      : 'Nihil';
+    rows.push([
+      d.tanggalDisplay,
+      d.guru || guruName,
+      d.mapel,
+      d.materi,
+      d.jumlahTidakHadir,
+      namaList,
+      d.foto ? 'Ya' : 'Tidak'
+    ]);
+  });
+  const csvContent = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  const blob = new Blob(['\uFEFF' + csvContent], {type: 'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const dari = document.getElementById('dariTglInput').value;
+  const sampai = document.getElementById('sampaiTglInput').value;
+  const rangeLabel = (dari || sampai) ? (dari || 'awal') + '_sd_' + (sampai || 'akhir') : 'semua';
+  a.href = url;
+  a.download = 'presensi-' + guruSlug + '-' + rangeLabel + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('CSV diunduh');
+});
+
+document.getElementById('dariTglInput').addEventListener('change', renderRiwayat);
+document.getElementById('sampaiTglInput').addEventListener('change', renderRiwayat);
+document.getElementById('semuaGuruToggle').addEventListener('change', loadRiwayat);
+document.getElementById('resetFilterBtn').addEventListener('click', () => {
+  document.getElementById('dariTglInput').value = '';
+  document.getElementById('sampaiTglInput').value = '';
+  renderRiwayat();
+});
+
+document.getElementById('tabPresensi').addEventListener('click', () => {
+  document.getElementById('tabPresensi').classList.add('active');
+  document.getElementById('tabRiwayat').classList.remove('active');
+  document.getElementById('viewPresensi').classList.remove('hidden');
+  document.getElementById('viewRiwayat').classList.add('hidden');
+});
+document.getElementById('tabRiwayat').addEventListener('click', () => {
+  document.getElementById('tabRiwayat').classList.add('active');
+  document.getElementById('tabPresensi').classList.remove('active');
+  document.getElementById('viewRiwayat').classList.remove('hidden');
+  document.getElementById('viewPresensi').classList.add('hidden');
+  loadRiwayat();
+});
+
+function enterApp(name){
+  guruName = name;
+  guruSlug = slugify(name);
+  document.getElementById('guruLabel').textContent = guruName;
+  document.getElementById('loginView').classList.add('hidden');
+  document.getElementById('appView').classList.remove('hidden');
+  document.getElementById('subTitle').textContent = 'catatan kehadiran harian';
+  setTanggalBox();
+  renderChips();
+}
+
+document.getElementById('loginBtn').addEventListener('click', () => {
+  const val = document.getElementById('guruNameInput').value.trim();
+  if(!val){
+    showToast('Masukkan nama guru dulu');
+    return;
+  }
+  enterApp(val);
+});
+document.getElementById('guruNameInput').addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') document.getElementById('loginBtn').click();
+});
+
+document.getElementById('gantiGuruBtn').addEventListener('click', () => {
+  document.getElementById('appView').classList.add('hidden');
+  document.getElementById('loginView').classList.remove('hidden');
+  document.getElementById('guruNameInput').value = '';
+  document.getElementById('semuaGuruToggle').checked = false;
+  document.getElementById('dariTglInput').value = '';
+  document.getElementById('sampaiTglInput').value = '';
+  document.getElementById('tabPresensi').click();
+  resetForm();
+});
+</script>
+</body>
+</html>
