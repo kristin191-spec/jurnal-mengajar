@@ -760,7 +760,7 @@ document.getElementById('simpanBtn').addEventListener('click', async () => {
   try{
     const res = await fetch(API_BASE_URL + '/simpan.php', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {'Content-Type': 'text/plain'},
       body: JSON.stringify(record)
     });
     const result = await res.json();
@@ -873,7 +873,7 @@ function renderRiwayat(){
       try{
         const res = await fetch(API_BASE_URL + '/hapus.php', {
           method: 'POST',
-          headers: {'Content-Type': 'application/json'},
+          headers: {'Content-Type': 'text/plain'},
           body: JSON.stringify({id: item.key})
         });
         const result = await res.json();
