@@ -643,7 +643,7 @@ function showToast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2200);
+  setTimeout(()=>t.classList.remove('show'), 4000);
 }
 
 function setTanggalBox(){
@@ -771,7 +771,7 @@ document.getElementById('simpanBtn').addEventListener('click', async () => {
       showToast(result.error || 'Gagal menyimpan, coba lagi');
     }
   }catch(err){
-    showToast('Gagal menyimpan, cek koneksi internet / server');
+    showToast('Gagal menyimpan: ' + err.message);
   }
   btn.disabled = false;
   btn.textContent = 'Simpan presensi';
