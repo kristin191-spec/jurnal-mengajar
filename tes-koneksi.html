@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tes Koneksi</title>
+<style>
+  body{font-family: monospace; background:#1a1a1a; color:#eee; padding:16px; font-size:14px; line-height:1.5;}
+  h2{color:#fff;}
+  .box{background:#2a2a2a; border-radius:6px; padding:12px; margin-bottom:12px; white-space:pre-wrap; word-break:break-word;}
+  .ok{color:#7CFC9A;}
+  .fail{color:#FF8080;}
+  button{padding:10px 16px; font-size:14px; margin-bottom:16px;}
+</style>
+</head>
+<body>
+<h2>Tes Koneksi ke Server</h2>
+<button onclick="jalankanTes()">Mulai Tes</button>
+<div id="hasil"></div>
+
+<script>
+const API_BASE_URL = "https://jurnal-sekolah.wuaze.com/api";
+
+function tulis(judul, isi, ok){
+  const div = document.createElement('div');
+  div.className = 'box';
+  div.innerHTML = '<b class="' + (ok ? 'ok' : 'fail') + '">' + judul + '</b>\n' + isi;
+  document.getElementById('hasil').appendChild(div);
+}
+
+async function jalankanTes(){
+  document.getElementById('hasil').innerHTML = '';
+
+  // Tes 1: GET biasa
+  try{
+    const res = await fetch(API_BASE_URL + '/riwayat.php?semua=1');
+    const text = await res.text();
+    tulis('Tes 1 - GET riwayat.php', 'Status: ' + res.status + '\nIsi: ' + text.slice(0,200), true);
+  }catch(err){
+    tulis('Tes 1 - GET riwayat.php', 'GAGAL: ' + err.name + ' - ' + err.message, false);
+  }
+
+  // Tes 2: POST kecil dengan mode cors (seperti simpan presensi asli)
+  try{
+    const res = await fetch(API_BASE_URL + '/simpan.php', {
+      method: 'POST',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({guru:'TES', mapel:'TES', materi:'TES', tidakHadir:[], foto:'data:image/jpeg;base64,AAAA'})
+    });
+    const text = await res.text();
+    tulis('Tes 2 - POST simpan.php (mode cors)', 'Status: ' + res.status + '\nIsi: ' + text.slice(0,300), true);
+  }catch(err){
+    tulis('Tes 2 - POST simpan.php (mode cors)', 'GAGAL: ' + err.name + ' - ' + err.message, false);
+  }
+
+  // Tes 3: POST dengan mode no-cors (untuk cek apakah koneksinya sendiri diblokir atau cuma soal kebijakan CORS)
+  try{
+    await fetch(API_BASE_URL + '/simpan.php', {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {'Content-Type': 'text/plain'},
+      body: JSON.stringify({guru:'TES', mapel:'TES', materi:'TES', tidakHadir:[], foto:'data:image/jpeg;base64,AAAA'})
+    });
+    tulis('Tes 3 - POST simpan.php (mode no-cors)', 'Permintaan berhasil terkirim tanpa error jaringan (respon tidak bisa dibaca, itu wajar untuk mode ini).', true);
+  }catch(err){
+    tulis('Tes 3 - POST simpan.php (mode no-cors)', 'GAGAL: ' + err.name + ' - ' + err.message, false);
+  }
+}
+</script>
+</body>
+</html>
